@@ -5,7 +5,6 @@ import process.SecondOrderSystem;
  */
 public class Main {
     public static void main(String[] args){
-        SecondOrderSystem G = new SecondOrderSystem("G");
-        G.start();
+
     }
 }
