@@ -23,7 +23,7 @@ import java.util.ResourceBundle;
 /**
  * Created by marlon on 6/16/14.
  */
-public class Gui extends AnchorPane implements Initializable{
+public class Gui extends AnchorPane {
     private static final int  TRENDING_DATA_LIMIT = 50;
     private static final long SAMPLING_TIME = 500;
 
@@ -51,6 +51,9 @@ public class Gui extends AnchorPane implements Initializable{
     private long                        lastUpdate;
 
     public Gui() {
+        processSimulator = new SystemSimulator();
+        conicalTank      = new ConicalTankTransferFunction();
+
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("Gui.fxml"));
             fxmlLoader.setRoot(this);
@@ -69,11 +72,6 @@ public class Gui extends AnchorPane implements Initializable{
         });
         trendings.getData().add(outputTrendingSeries);
 
-        conicalTank  = new ConicalTankTransferFunction();
-    }
-
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
         registerListeners();
     }
 
@@ -96,12 +94,12 @@ public class Gui extends AnchorPane implements Initializable{
 
     private void startSimulation(){
         lastUpdate       = System.currentTimeMillis();
-        processSimulator = new SystemSimulator();
         processSimulator.run();
     }
 
     private void stopSimulation(){
         processSimulator.interrupt();
+        processSimulator = new SystemSimulator();
     }
 
     private void updateTrending(Timestamp currentTime){
@@ -115,7 +113,7 @@ public class Gui extends AnchorPane implements Initializable{
     }
 
     private void recalculate() {
-        conicalTank.setHeightOperationPoint(Double.parseDouble(heightOperationPointLabel.getText()));
+        conicalTank.setHeightOperationPoint(Double.parseDouble(heightSetPointTextField.getText()));
         processSimulator.getProcess().setGain(conicalTank.getGain());
         processSimulator.getProcess().setTau(conicalTank.getTau());
     }

@@ -1,10 +1,7 @@
 package process;
 
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
-
-import java.sql.Time;
-import java.sql.Timestamp;
+import javafx.beans.property.LongProperty;
+import javafx.beans.property.SimpleLongProperty;
 
 /**
  * Created by marlon on 6/17/14.
@@ -18,14 +15,14 @@ public class SystemSimulator extends Thread{
 
     private FirstOrderSystem process;
     private double[]         vz;
-    private ObjectProperty<Timestamp> timeStamp;
+    private LongProperty timeStamp;
 
     public SystemSimulator() {
         setName("OpenLoopSimulator");
         setDaemon(true);
         process   = new FirstOrderSystem();
         vz        = new double[2];
-        timeStamp = new SimpleObjectProperty<>(this, "timestamp", new Timestamp(System.currentTimeMillis()));
+        timeStamp = new SimpleLongProperty(this, "timestamp", System.currentTimeMillis());
     }
 
     @Override
@@ -41,7 +38,7 @@ public class SystemSimulator extends Thread{
             }
 
             vz[1] = vz[0];
-            timeStamp.set(new Timestamp(System.currentTimeMillis()));
+            timeStamp.set(System.currentTimeMillis());
         }
     }
 
@@ -52,13 +49,5 @@ public class SystemSimulator extends Thread{
         this.process = process;
     }
 
-    public Timestamp getTimeStamp() {
-        return timeStamp.get();
-    }
-    public ObjectProperty<Timestamp> timeStampProperty() {
-        return timeStamp;
-    }
-    public void setTimeStamp(Timestamp timeStamp) {
-        this.timeStamp.set(timeStamp);
-    }
+
 }

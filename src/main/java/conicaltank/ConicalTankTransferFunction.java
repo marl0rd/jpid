@@ -13,8 +13,8 @@ import javafx.beans.property.DoublePropertyBase;
 public class ConicalTankTransferFunction {
 
     // PROPERTIES //
-    private static final double HEIGHT      = 10.0;
-    private static final double RADIUS      = 5.0;
+    private static final double HEIGHT      = 100.0;
+    private static final double RADIUS      = 40.0;
     private static final double GRAVITY     = 9.8;
     private static final double OBSTRUCTION = 1.5;
 

@@ -27,7 +27,7 @@ public class FirstOrderSystem {
         output       = new SimpleDoubleProperty(this, "output", 0.0);
         gain         = new SimpleDoubleProperty(this, "gaing", 0.0);
         tau          = new SimpleDoubleProperty(this, "tau", 0.0);
-        samplingTime = new SimpleLongProperty(this, "samplingTime", 100);
+        samplingTime = new SimpleLongProperty(this, "samplingTime", 1000);
     }
 
     public double getInput() {
