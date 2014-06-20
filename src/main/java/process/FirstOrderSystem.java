@@ -10,9 +10,9 @@ import javafx.beans.property.SimpleLongProperty;
  *
  * The transfer function is in form:
  *
- * G(s) =   gain
- *        ---------
- *        tau*s + 1
+ *      output         gain
+ *      ------   =   ---------
+ *       input       tau*S + 1
  *
  */
 public class FirstOrderSystem {
@@ -20,14 +20,12 @@ public class FirstOrderSystem {
     private DoubleProperty output;
     private DoubleProperty gain;
     private DoubleProperty tau;
-    private DoubleProperty  samplingTime;
 
     public FirstOrderSystem() {
         input        = new SimpleDoubleProperty(this, "input", 0.0);
         output       = new SimpleDoubleProperty(this, "output", 0.0);
         gain         = new SimpleDoubleProperty(this, "gaing", 0.0);
         tau          = new SimpleDoubleProperty(this, "tau", 0.0);
-        samplingTime = new SimpleDoubleProperty(this, "samplingTime", 0.1);
     }
 
     public double getInput() {
@@ -68,15 +66,5 @@ public class FirstOrderSystem {
     }
     public void setTau(double tau) {
         this.tau.set(tau);
-    }
-
-    public double getSamplingTime() {
-        return samplingTime.get();
-    }
-    public DoubleProperty samplingTimeProperty() {
-        return samplingTime;
-    }
-    public void setSamplingTime(double samplingTime) {
-        this.samplingTime.set(samplingTime);
     }
 }

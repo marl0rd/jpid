@@ -2,32 +2,29 @@ package conicaltank;
 
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.DoublePropertyBase;
+import process.FirstOrderSystem;
 
 /**
  * Created by marlon on 6/18/14.
  *
- * G(s) =   gain
- *        ---------
- *        tau*s + 1
  */
-public class ConicalTankTransferFunction {
+public class ConicalTankProcess extends FirstOrderSystem{
 
     // PROPERTIES //
-    private static final double HEIGHT      = 100.0;
-    private static final double RADIUS      = 40.0;
-    private static final double GRAVITY     = 9.8;
-    private static final double OBSTRUCTION = 1.5;
+    private static final double HEIGHT                = 100.0;
+    private static final double RADIUS                = 40.0;
+    private static final double GRAVITY               = 9.8;
+    private static final double OBSTRUCTION           = 1.5;
+    private DoubleProperty      heightOperationPoint;
+    private DoubleProperty      inflowOperationPoint;
+    private FirstOrderSystem    transferFunction;
 
-    private DoubleProperty heightOperationPoint;
-    private DoubleProperty inflowOperationPoint;
-
-    private double gain;
-    private double tau;
 
     // CONSTRUCTOR //
-    public ConicalTankTransferFunction() {
+    public ConicalTankProcess() {
         this.heightOperationPoint = new DoublePropertyBase(0.0001) {
             @Override protected void invalidated() {
+                recalculate();
                 set(get());
             }
             @Override public Object getBean() {
@@ -50,8 +47,9 @@ public class ConicalTankTransferFunction {
                 return "inflowOperationPoint";
             }
         };
-        recalculate();
+        transferFunction = new FirstOrderSystem();
     }
+
 
     // METHODS //
     private void recalculate(){
@@ -64,20 +62,9 @@ public class ConicalTankTransferFunction {
         double beta = (3 * Math.pow(HEIGHT,2) * Math.pow(heightOperationPoint.get(),-2)) /
                 (Math.PI * Math.pow(RADIUS,2));
 
-        gain = beta / alpha;
-        tau  = 1 / alpha;
+        transferFunction.setGain(beta / alpha);
+        transferFunction.setTau(1 / alpha);
     }
-
-    // SETTERS AND GETTERS //
-    public double getGain() {
-        recalculate();
-        return gain;
-    }
-    public double getTau() {
-        recalculate();
-        return tau;
-    }
-
 
     public double getHeightOperationPoint() {
         return heightOperationPoint.get();
@@ -97,5 +84,12 @@ public class ConicalTankTransferFunction {
     }
     public void setInflowOperationPoint(double inflowOperationPoint) {
         this.inflowOperationPoint.set(inflowOperationPoint);
+    }
+
+    public FirstOrderSystem getTransferFunction() {
+        return transferFunction;
+    }
+    public void setTransferFunction(FirstOrderSystem transferFunction) {
+        this.transferFunction = transferFunction;
     }
 }
