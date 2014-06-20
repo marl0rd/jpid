@@ -20,14 +20,14 @@ public class FirstOrderSystem {
     private DoubleProperty output;
     private DoubleProperty gain;
     private DoubleProperty tau;
-    private LongProperty  samplingTime;
+    private DoubleProperty  samplingTime;
 
     public FirstOrderSystem() {
         input        = new SimpleDoubleProperty(this, "input", 0.0);
         output       = new SimpleDoubleProperty(this, "output", 0.0);
         gain         = new SimpleDoubleProperty(this, "gaing", 0.0);
         tau          = new SimpleDoubleProperty(this, "tau", 0.0);
-        samplingTime = new SimpleLongProperty(this, "samplingTime", 1000);
+        samplingTime = new SimpleDoubleProperty(this, "samplingTime", 0.1);
     }
 
     public double getInput() {
@@ -70,13 +70,13 @@ public class FirstOrderSystem {
         this.tau.set(tau);
     }
 
-    public long getSamplingTime() {
+    public double getSamplingTime() {
         return samplingTime.get();
     }
-    public LongProperty samplingTimeProperty() {
+    public DoubleProperty samplingTimeProperty() {
         return samplingTime;
     }
-    public void setSamplingTime(long samplingTime) {
+    public void setSamplingTime(double samplingTime) {
         this.samplingTime.set(samplingTime);
     }
 }

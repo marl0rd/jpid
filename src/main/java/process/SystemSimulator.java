@@ -27,14 +27,15 @@ public class SystemSimulator extends Thread{
 
     @Override
     public void run() {
-        while(true){
+        boolean started = true;
+        while(started){
             vz[0] = process.getInput() - ((process.getSamplingTime() - 2 * process.getTau()) / (process.getSamplingTime() + 2 * process.getTau())) * vz[1];
             process.setOutput(((process.getGain() * process.getSamplingTime()) / (process.getSamplingTime() + 2 * process.getTau())) * (vz[0] + vz[1]));
 
             try {
-                Thread.sleep(process.getSamplingTime());
+                Thread.sleep((long) (process.getSamplingTime() * 1000));
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                started = false;
             }
 
             vz[1] = vz[0];
@@ -49,5 +50,13 @@ public class SystemSimulator extends Thread{
         this.process = process;
     }
 
-
+    public long getTimeStamp() {
+        return timeStamp.get();
+    }
+    public LongProperty timeStampProperty() {
+        return timeStamp;
+    }
+    public void setTimeStamp(long timeStamp) {
+        this.timeStamp.set(timeStamp);
+    }
 }
