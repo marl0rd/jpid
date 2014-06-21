@@ -1,4 +1,4 @@
-import gui.Gui;
+import gui.GuiController;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
@@ -13,8 +13,8 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        Gui gui = new Gui();
-        Scene scene = new Scene(gui);
+        GuiController guiController = new GuiController();
+        Scene scene = new Scene(guiController);
         primaryStage.setScene(scene);
         primaryStage.show();
     }

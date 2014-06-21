@@ -1,7 +1,6 @@
 package process;
 
-import javafx.beans.property.LongProperty;
-import javafx.beans.property.SimpleLongProperty;
+import util.Preferences;
 
 /**
  * Created by marlon on 6/17/14.
@@ -12,58 +11,52 @@ import javafx.beans.property.SimpleLongProperty;
  *
  */
 public class FirstOrderSimulator extends Thread{
+    // ********** Fields **********//
+    private final double[]             vz;
+    private FirstOrderSystem           process;
+    private boolean                    started;
+    private double                     samplingTime;
+    private Preferences.SimulationMode simulationMode;
 
-    private static final double DEFAULT_SAMPLING_TIME = 0.01;
-    private final double[]      vz;
-    private FirstOrderSystem    process;
-    private final LongProperty  timeStamp;
-    private boolean             started;
-    private double              samplingTime;
-
+    // ********** Constructor **********//
     public FirstOrderSimulator(FirstOrderSystem process) {
-        setName("OpenLoopSimulator");
+        setName("ProcessSimulator");
         setDaemon(true);
         this.process        = process;
-        this.samplingTime   = DEFAULT_SAMPLING_TIME;
+        this.samplingTime   = Preferences.samplingTime;
+        this.simulationMode = Preferences.simulationMode;
         this.vz             = new double[2];
-        this.timeStamp      = new SimpleLongProperty(this, "timestamp", System.currentTimeMillis());
     }
 
+    // ********** Methods **********//
     @Override
     public void run() {
+        started = true;
         while(started){
             vz[0] = process.getInput() - ((samplingTime- 2 * process.getTau()) / (samplingTime + 2 * process.getTau())) * vz[1];
+            System.out.println("vcz[0]" + vz[0]);
             process.setOutput(((process.getGain() * samplingTime) / (samplingTime + 2 * process.getTau())) * (vz[0] + vz[1]));
             delay();
             vz[1] = vz[0];
+            System.out.println("vcz[1]" + vz[1]);
         }
     }
 
     public void delay(){
         // The samplingTime of process is based in second, the sleep method is based in milliseconds
         try {
-            Thread.sleep((long) (samplingTime * 1000));
+            Thread.sleep((long) ((samplingTime * simulationMode.factor)* 1000));
         } catch (InterruptedException e) {
             started = false;
         }
-        timeStamp.set(System.currentTimeMillis());
     }
 
+    // ********** Setters and Getters **********//
     public FirstOrderSystem getProcess() {
         return process;
     }
     public void setProcess(FirstOrderSystem process) {
         this.process = process;
-    }
-
-    public long getTimeStamp() {
-        return timeStamp.get();
-    }
-    public LongProperty timeStampProperty() {
-        return timeStamp;
-    }
-    public void setTimeStamp(long timeStamp) {
-        this.timeStamp.set(timeStamp);
     }
 
     public double getSamplingTime() {
@@ -78,5 +71,12 @@ public class FirstOrderSimulator extends Thread{
     }
     public void setStarted(boolean started) {
         this.started = started;
+    }
+
+    public Preferences.SimulationMode getSimulationMode() {
+        return simulationMode;
+    }
+    public void setSimulationMode(Preferences.SimulationMode simulationMode) {
+        this.simulationMode = simulationMode;
     }
 }

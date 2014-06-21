@@ -10,7 +10,7 @@ import process.FirstOrderSystem;
  */
 public class ConicalTankProcess extends FirstOrderSystem{
 
-    // PROPERTIES //
+    // ********** Fields **********//
     private static final double HEIGHT                = 100.0;
     private static final double RADIUS                = 40.0;
     private static final double GRAVITY               = 9.8;
@@ -20,7 +20,7 @@ public class ConicalTankProcess extends FirstOrderSystem{
     private FirstOrderSystem    transferFunction;
 
 
-    // CONSTRUCTOR //
+    // ********** Constructor **********//
     public ConicalTankProcess() {
         this.heightOperationPoint = new DoublePropertyBase(0.0001) {
             @Override protected void invalidated() {
@@ -51,7 +51,7 @@ public class ConicalTankProcess extends FirstOrderSystem{
     }
 
 
-    // METHODS //
+    // ********** Methods **********//
     private void recalculate(){
         double alpha = ((9/2) *
                 (OBSTRUCTION * Math.pow(HEIGHT,2) * Math.sqrt(2*GRAVITY) * Math.pow(heightOperationPoint.get(), -5/2)) /
@@ -66,6 +66,7 @@ public class ConicalTankProcess extends FirstOrderSystem{
         transferFunction.setTau(1 / alpha);
     }
 
+    // ********** Setters and Getters **********//
     public double getHeightOperationPoint() {
         return heightOperationPoint.get();
     }

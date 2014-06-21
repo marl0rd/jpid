@@ -1,10 +1,5 @@
 package process;
 
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.LongProperty;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleLongProperty;
-
 /**
  * Created by marlon on 6/16/14.
  *
@@ -16,55 +11,46 @@ import javafx.beans.property.SimpleLongProperty;
  *
  */
 public class FirstOrderSystem {
-    private DoubleProperty input;
-    private DoubleProperty output;
-    private DoubleProperty gain;
-    private DoubleProperty tau;
+    // ********** Fields **********//
+    private double input;
+    private double output;
+    private double gain;
+    private double tau;
 
+    // ********** Constructor **********//
     public FirstOrderSystem() {
-        input        = new SimpleDoubleProperty(this, "input", 0.0);
-        output       = new SimpleDoubleProperty(this, "output", 0.0);
-        gain         = new SimpleDoubleProperty(this, "gaing", 0.0);
-        tau          = new SimpleDoubleProperty(this, "tau", 0.0);
+        input  = 0.0;
+        output = 0.0;
+        gain   = 0.0;
+        tau    = 0.0;
     }
 
+    // ********** Setters and Getters **********//
     public double getInput() {
-        return input.get();
-    }
-    public DoubleProperty inputProperty() {
         return input;
     }
     public void setInput(double input) {
-        this.input.set(input);
+        this.input = input;
     }
 
     public double getOutput() {
-        return output.get();
-    }
-    public DoubleProperty outputProperty() {
         return output;
     }
     public void setOutput(double output) {
-        this.output.set(output);
+        this.output = output;
     }
 
     public double getGain() {
-        return gain.get();
-    }
-    public DoubleProperty gainProperty() {
         return gain;
     }
     public void setGain(double gain) {
-        this.gain.set(gain);
+        this.gain = gain;
     }
 
     public double getTau() {
-        return tau.get();
-    }
-    public DoubleProperty tauProperty() {
         return tau;
     }
     public void setTau(double tau) {
-        this.tau.set(tau);
+        this.tau = tau;
     }
 }
