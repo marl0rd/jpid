@@ -1,4 +1,4 @@
-package sources;
+package source;
 
 /**
  * Created by marlon on 6/24/14.

@@ -1,6 +1,5 @@
 package gui;
 
-import process.ConicalTankProcess;
 import continuous.FirstOrderSystem;
 import continuous.PIController;
 import continuous.PITuning;
@@ -18,6 +17,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import simulation.*;
+import source.Source;
 import util.Preferences;
 import java.io.IOException;
 import java.sql.Date;
@@ -34,36 +34,34 @@ public class GuiController extends AnchorPane {
     private static final SimpleDateFormat     TIME_FORMAT                = new SimpleDateFormat("mm:ss.SSS");
 
     // ********** Fields **********//
-    private ConicalTankProcess conicalTank;
+    private Source             source;
     private FirstOrderSystem   process;
     private PIController       controller;
     private PITuning           piTuning;
     private Loop               loop;
 
-    @FXML private TextField                   heightSetPointTextField;
-    @FXML private TextField                   flowSetPointTextField;
-    @FXML private Button                      newProcessParametersButton;
-    @FXML private Button                      newControlParametersButton;
-    @FXML private MenuItem                    startSimulationMenuItem;
-    @FXML private MenuItem                    stopSimulationMenuItem;
-    @FXML private MenuItem                    preferencesMenuItem;
-    @FXML private Label                       heightOperationPointLabel;
-    @FXML private Label                       inflowOperationPointLabel;
-    @FXML private Label                       samplingTimeLabel;
-    @FXML private Label                       kpLabel;
-    @FXML private Label                       kiLabel;
-    @FXML private Label                       integralTimeLabel;
-    @FXML private Label                       tauLabel;
-    @FXML private Label                       gainLabel;
-    @FXML private Label                       inputLabel;
-    @FXML private Label                       outputLabel;
-    @FXML private CategoryAxis                categoryAxis;
-    @FXML private NumberAxis                  numberAxis;
-    @FXML private LineChart<String, Double>   trendings;
-    @FXML private ListView<String>            consoleListView;
-    @FXML private TextField                   dampingRatioTextField;
-    @FXML private TextField                   settlingTimeTextField;
-    private XYChart.Series<String, Double>    outputTrendingSeries;
+    @FXML private ChoiceBox<Preferences.ControlType>    controlTypeChoiceBox;
+    @FXML private ChoiceBox<Preferences.Source>         sourceChoiceBox;
+    @FXML private ChoiceBox<Preferences.ControllerType> controllerChoiceBox;
+    @FXML private ChoiceBox<String>                     processChoiceBox;
+    @FXML private TextField                             sourceValueTextField;
+    @FXML private MenuItem                              startSimulationMenuItem;
+    @FXML private MenuItem                              stopSimulationMenuItem;
+    @FXML private MenuItem                              preferencesMenuItem;
+    @FXML private Label                                 inputValueLabel;
+    @FXML private Label                                 samplingTimeLabel;
+    @FXML private Label                                 kpLabel;
+    @FXML private Label                                 kiLabel;
+    @FXML private Label                                 integralTimeLabel;
+    @FXML private Label                                 tauLabel;
+    @FXML private Label                                 gainLabel;
+    @FXML private Label                                 outputValueLabel;
+    @FXML private CategoryAxis                          categoryAxis;
+    @FXML private NumberAxis                            numberAxis;
+    @FXML private LineChart<String, Double>             trendings;
+    @FXML private TextField                             dampingRatioTextField;
+    @FXML private TextField                             settlingTimeTextField;
+    private XYChart.Series<String, Double>              outputTrendingSeries;
 
     // ********** Constructor **********//
     public GuiController() {
@@ -76,18 +74,18 @@ public class GuiController extends AnchorPane {
             throw new RuntimeException(exception);
         }
 
-        conicalTank = new ConicalTankProcess();
-        process     = conicalTank.getTransferFunction();
+        process     = new FirstOrderSystem();
         controller  = new PIController();
         piTuning    = new PITuning(controller, process);
         loop        = new Loop(process, controller);
 
-        initializeLineChart();
+        initializeGraphics();
         registerListeners();
     }
 
     // ********** Methods **********//
-    private void initializeLineChart() {
+    private void initializeGraphics() {
+        //LineCharts
         outputTrendingSeries = new XYChart.Series<>();
         numberAxis.setTickLabelFormatter(new NumberAxis.DefaultFormatter(numberAxis) {
             @Override
@@ -96,16 +94,17 @@ public class GuiController extends AnchorPane {
             }
         });
         trendings.getData().add(outputTrendingSeries);
+
+        // ChoiceBoxes
+        controlTypeChoiceBox.getItems().addAll(Preferences.ControlType.values());
+        sourceChoiceBox.getItems().addAll(Preferences.Source.values());
+
     }
 
     private void registerListeners() {
         // GUI Changes:
         startSimulationMenuItem.setOnAction(value -> startSimulation());
         stopSimulationMenuItem.setOnAction(value -> stopSimulation());
-
-        newProcessParametersButton.setOnAction(value -> recalculate());
-        newControlParametersButton.setOnAction(value -> recalculate());
-
         preferencesMenuItem.setOnAction(value -> showPreferences());
 
         // The loop inform about new values, so they are displayed in the gui:

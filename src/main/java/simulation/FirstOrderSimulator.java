@@ -6,9 +6,9 @@ import util.Preferences;
 /**
  * Created by marlon on 6/17/14.
  *
- *                      |   gain     |
+ *                         |   gain     |
  * simulation.input ------>| ---------  |-------> simulation.output
- *                      | tau*s + 1  |
+ *                         | tau*s + 1  |
  *
  */
 public class FirstOrderSimulator extends Thread{
