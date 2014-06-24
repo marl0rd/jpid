@@ -1,23 +1,29 @@
-package process;
+package simulation;
 
+import continuous.FirstOrderSystem;
 import util.Preferences;
 
 /**
- * Created by marlon on 6/19/14.
+ * Created by marlon on 6/17/14.
+ *
+ *                      |   gain     |
+ * simulation.input ------>| ---------  |-------> simulation.output
+ *                      | tau*s + 1  |
+ *
  */
-public class PISimulator extends Thread {
+public class FirstOrderSimulator extends Thread{
     // ********** Fields **********//
     private final double[]             vz;
-    private PIController               controller;
+    private FirstOrderSystem process;
     private boolean                    started;
     private double                     samplingTime;
     private Preferences.SimulationMode simulationMode;
 
     // ********** Constructor **********//
-    public PISimulator(PIController controller) {
-        setName("OpenLoopSimulator");
+    public FirstOrderSimulator(FirstOrderSystem process) {
+        setName("ProcessSimulator");
         setDaemon(true);
-        this.controller     = controller;
+        this.process        = process;
         this.samplingTime   = Preferences.samplingTime;
         this.simulationMode = Preferences.simulationMode;
         this.vz             = new double[2];
@@ -28,16 +34,17 @@ public class PISimulator extends Thread {
     public void run() {
         started = true;
         while(started){
-            vz[0] = controller.getInput() - vz[1];
-            controller.setOutput(((1/2) * (2*controller.getProportionalGain() + samplingTime*controller.getIntegralGain()) * vz[0]) +
-                    ((1/2) * (samplingTime*controller.getIntegralGain() - 2*controller.getProportionalGain()) * vz[1]));
+            vz[0] = process.getInput() - ((samplingTime- 2.0 * process.getTau()) / (samplingTime + 2.0 * process.getTau())) * vz[1];
+            System.out.println("vcz[0]" + vz[0]);
+            process.setOutput(((process.getGain() * samplingTime) / (samplingTime + 2.0 * process.getTau())) * (vz[0] + vz[1]));
             delay();
             vz[1] = vz[0];
+            System.out.println("vcz[1]" + vz[1]);
         }
     }
 
     public void delay(){
-        // The samplingTime of process is based in second, the sleep method is based in milliseconds
+        // The samplingTime of simulation is based in second, the sleep method is based in milliseconds
         try {
             Thread.sleep((long) ((samplingTime * simulationMode.factor)* 1000));
         } catch (InterruptedException e) {
@@ -46,11 +53,11 @@ public class PISimulator extends Thread {
     }
 
     // ********** Setters and Getters **********//
-    public PIController getController() {
-        return controller;
+    public FirstOrderSystem getProcess() {
+        return process;
     }
-    public void setController(PIController controller) {
-        this.controller = controller;
+    public void setProcess(FirstOrderSystem process) {
+        this.process = process;
     }
 
     public double getSamplingTime() {

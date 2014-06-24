@@ -1,7 +1,11 @@
 package gui;
 
-import conicaltank.ConicalTankProcess;
-import javafx.application.Platform;
+import process.ConicalTankProcess;
+import continuous.FirstOrderSystem;
+import continuous.PIController;
+import continuous.PITuning;
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -13,7 +17,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import process.*;
+import simulation.*;
 import util.Preferences;
 import java.io.IOException;
 import java.sql.Date;
@@ -31,9 +35,9 @@ public class GuiController extends AnchorPane {
 
     // ********** Fields **********//
     private ConicalTankProcess conicalTank;
-    private FirstOrderSystem   process;
-    private PIController       controller;
-    private PITuning           piTuning;
+    private FirstOrderSystem process;
+    private PIController controller;
+    private PITuning piTuning;
     private Loop               loop;
 
     @FXML private TextField                   heightSetPointTextField;
@@ -105,7 +109,7 @@ public class GuiController extends AnchorPane {
         preferencesMenuItem.setOnAction(value -> showPreferences());
 
         // Loop refresh
-        loop.timeStampProperty().addListener(value -> updateGui());
+        loop.timeStampProperty().addListener(updateGui);
     }
 
     private void showPreferences() {
@@ -122,11 +126,9 @@ public class GuiController extends AnchorPane {
         loop.setSamplingTime(Preferences.samplingTime);
         loop.setSimulationMode(Preferences.simulationMode);
         loop.setLoopType(Preferences.loopType);
-        recalculate();
     }
 
     private void startSimulation(){
-        recalculate();
         loop.start();
     }
 
@@ -136,38 +138,44 @@ public class GuiController extends AnchorPane {
     }
 
     private void updateGui(){
-        Platform.runLater(() -> {
-            if(loop.getLoopStarted()){
-                // Update Loop visualization
-                outputTrendingSeries.getData().add(new XYChart.Data<>(TIME_FORMAT.format(Date.from(Instant.now())), loop.getOutput()));
-                while (outputTrendingSeries.getData().size() > TRENDING_DATA_LIMIT) {
-                    outputTrendingSeries.getData().remove(0);
-                }
-                consoleListView.getItems().add("I= " + loop.getInput() + ", \t O=" + loop.getOutput());
-                while(consoleListView.getItems().size() > CONSOLE_DATA_LIMIT) {
-                    consoleListView.getItems().remove(0);
-                }
+        if(loop.getLoopStarted()){
+            // Update Loop visualization
+            outputTrendingSeries.getData().add(new XYChart.Data<>(TIME_FORMAT.format(Date.from(Instant.now())), loop.getOutput()));
+            while (outputTrendingSeries.getData().size() > TRENDING_DATA_LIMIT) {
+                outputTrendingSeries.getData().remove(0);
             }
+            consoleListView.getItems().add("I= " + loop.getInput() + ", \t O=" + loop.getOutput());
+            while(consoleListView.getItems().size() > CONSOLE_DATA_LIMIT) {
+                consoleListView.getItems().remove(0);
+            }
+        }
 
-            samplingTimeLabel.setText(Double.toString(loop.getSamplingTime()));
+        samplingTimeLabel.setText(Double.toString(loop.getSamplingTime()));
 
-            // Update conicalTank visualization
-            heightOperationPointLabel.setText(String.valueOf(conicalTank.getHeightOperationPoint()));
-            inflowOperationPointLabel.setText(String.valueOf(conicalTank.getInflowOperationPoint()));
+        // Update conicalTank visualization
+        heightOperationPointLabel.setText(String.valueOf(conicalTank.getHeightOperationPoint()));
+        inflowOperationPointLabel.setText(String.valueOf(conicalTank.getInflowOperationPoint()));
 
-            // Update Process visualization
-            tauLabel.setText(Double.toString(loop.getProcess().getTau()));
-            gainLabel.setText(Double.toString(loop.getProcess().getGain()));
-            inputLabel.setText(Double.toString(loop.getProcess().getInput()));
-            outputLabel.setText(Double.toString(loop.getProcess().getOutput()));
+        // Update Process visualization
+        tauLabel.setText(Double.toString(loop.getProcess().getTau()));
+        gainLabel.setText(Double.toString(loop.getProcess().getGain()));
+        inputLabel.setText(Double.toString(loop.getProcess().getInput()));
+        outputLabel.setText(Double.toString(loop.getProcess().getOutput()));
 
-            // Update Controller visualization
-            kpLabel.setText(Double.toString(loop.getController().getProportionalGain()));
-            kiLabel.setText(Double.toString(loop.getController().getIntegralGain()));
-            integralTimeLabel.setText(Double.toString(loop.getController().getIntegralTime()));
-        });
-
+        // Update Controller visualization
+        kpLabel.setText(Double.toString(loop.getController().getProportionalGain()));
+        kiLabel.setText(Double.toString(loop.getController().getIntegralGain()));
+        integralTimeLabel.setText(Double.toString(loop.getController().getIntegralTime()));
     }
+
+    private InvalidationListener updateGui = new InvalidationListener() {
+        @Override
+        public void invalidated(Observable observable) {
+            updateGui();
+            loop.timeStampProperty().removeListener(this);
+            loop.timeStampProperty().addListener(this);
+        }
+    };
 
     private void recalculate() {
         linealizeInNewSetPoint();

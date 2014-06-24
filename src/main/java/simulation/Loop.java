@@ -1,5 +1,8 @@
-package process;
+package simulation;
 
+import continuous.FirstOrderSystem;
+import continuous.PIController;
+import javafx.application.Platform;
 import javafx.beans.property.*;
 import util.Preferences;
 
@@ -12,8 +15,8 @@ public class Loop extends Thread {
     private double                     input;
     private double                     output;
     private double                     error;
-    private FirstOrderSystem           process;
-    private PIController               controller;
+    private FirstOrderSystem process;
+    private PIController controller;
     private FirstOrderSimulator        processThread;
     private PISimulator                controllerThread;
     private LongProperty               timeStamp;
@@ -57,12 +60,12 @@ public class Loop extends Thread {
         while(loopStarted.get()){
             System.out.print("I=" + this.input + "\t");
 
-            error = getProcessThread().getProcess().getOutput() - input;
+            error = input - getProcessThread().getProcess().getOutput();
             if(loopType == Preferences.LoopType.CLOSE_LOOP){
-                processThread.getProcess().setInput(this.input);
-            } else {
                 controllerThread.getController().setInput(this.error);
                 processThread.getProcess().setInput(controllerThread.getController().getOutput());
+            } else {
+                processThread.getProcess().setInput(this.input);
             }
 
             System.out.print("C=" + processThread.getProcess().getOutput() + "\t");
@@ -73,7 +76,7 @@ public class Loop extends Thread {
     }
 
     public void delay(){
-        // The samplingTime of process is based in second, the sleep method is based in milliseconds
+        // The samplingTime of simulation is based in second, the sleep method is based in milliseconds
         try {
             Thread.sleep((long) ((samplingTime * simulationMode.factor)* 1000));
         } catch (InterruptedException e) {
@@ -81,11 +84,13 @@ public class Loop extends Thread {
             processThread.setStarted(false);
             controllerThread.setStarted(false);
         }
-        System.out.println(System.currentTimeMillis());
-        timeStamp.set(System.currentTimeMillis());
+        Platform.runLater(() -> {
+            setTimeStamp(System.currentTimeMillis());
+        });
     }
 
-    // ********** Setters and Getters **********//
+                // ********** Setters and Getters **********//
+
     public double getInput() {
         return input;
     }

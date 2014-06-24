@@ -1,4 +1,4 @@
-package process;
+package continuous;
 
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.DoublePropertyBase;
@@ -61,9 +61,9 @@ public class PITuning {
 
     // ********** Methods **********//
     private void recalculate() {
-        undampedNaturalFrequency.set(4/(dampingRatio.get() * settlingTime.get()));
-        controller.setProportionalGain(((2*dampingRatio.get()*undampedNaturalFrequency.get()) - (1/process.getTau())) / (process.getGain()/process.getTau()));
-        controller.setIntegralTime((2*dampingRatio.get()*undampedNaturalFrequency.get() - (1/process.getTau())) / (Math.pow(undampedNaturalFrequency.get(), 2)));
+        undampedNaturalFrequency.set(4.0/(dampingRatio.get() * settlingTime.get()));
+        controller.setProportionalGain(((2.0*dampingRatio.get()*undampedNaturalFrequency.get()) - (1.0/process.getTau())) / (process.getGain()/process.getTau()));
+        controller.setIntegralTime((2.0*dampingRatio.get()*undampedNaturalFrequency.get() - (1.0/process.getTau())) / (Math.pow(undampedNaturalFrequency.get(), 2.0)));
         controller.setIntegralGain(controller.getProportionalGain() / controller.getIntegralTime());
     }
 

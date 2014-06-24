@@ -1,8 +1,8 @@
-package conicaltank;
+package process;
 
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.DoublePropertyBase;
-import process.FirstOrderSystem;
+import continuous.FirstOrderSystem;
 
 /**
  * Created by marlon on 6/18/14.
@@ -53,6 +53,7 @@ public class ConicalTankProcess extends FirstOrderSystem{
 
     // ********** Methods **********//
     private void recalculate(){
+
         double alpha = ((9/2) *
                 (OBSTRUCTION * Math.pow(HEIGHT,2) * Math.sqrt(2*GRAVITY) * Math.pow(heightOperationPoint.get(), -5/2)) /
                 (2 * Math.PI * Math.pow(RADIUS,2))) -
