@@ -35,9 +35,9 @@ public class GuiController extends AnchorPane {
 
     // ********** Fields **********//
     private ConicalTankProcess conicalTank;
-    private FirstOrderSystem process;
-    private PIController controller;
-    private PITuning piTuning;
+    private FirstOrderSystem   process;
+    private PIController       controller;
+    private PITuning           piTuning;
     private Loop               loop;
 
     @FXML private TextField                   heightSetPointTextField;
@@ -108,7 +108,7 @@ public class GuiController extends AnchorPane {
 
         preferencesMenuItem.setOnAction(value -> showPreferences());
 
-        // Loop refresh
+        // The loop inform about new values, so they are displayed in the gui:
         loop.timeStampProperty().addListener(updateGui);
     }
 

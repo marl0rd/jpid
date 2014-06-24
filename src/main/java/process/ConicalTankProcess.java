@@ -53,15 +53,12 @@ public class ConicalTankProcess extends FirstOrderSystem{
 
     // ********** Methods **********//
     private void recalculate(){
+        double k = (Math.pow(RADIUS, 2) * Math.PI ) / (Math.pow(HEIGHT, 2));
 
-        double alpha = ((9/2) *
-                (OBSTRUCTION * Math.pow(HEIGHT,2) * Math.sqrt(2*GRAVITY) * Math.pow(heightOperationPoint.get(), -5/2)) /
-                (2 * Math.PI * Math.pow(RADIUS,2))) -
-                ((6 * Math.pow(HEIGHT,2) * inflowOperationPoint.get() * Math.pow(heightOperationPoint.get(),-3)) /
-                (Math.PI * Math.pow(RADIUS,2)));
+        double alpha = ((3 * OBSTRUCTION * Math.sqrt(2*GRAVITY) * Math.pow(getHeightOperationPoint(),-5/2)) / (2 * k)) -
+                ((2 * getInflowOperationPoint() * Math.pow(getHeightOperationPoint(), -3)) / (k));
 
-        double beta = (3 * Math.pow(HEIGHT,2) * Math.pow(heightOperationPoint.get(),-2)) /
-                (Math.PI * Math.pow(RADIUS,2));
+        double beta = Math.pow(getHeightOperationPoint(), -2) / k;
 
         transferFunction.setGain(beta / alpha);
         transferFunction.setTau(1 / alpha);
