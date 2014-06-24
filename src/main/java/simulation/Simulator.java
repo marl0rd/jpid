@@ -10,7 +10,7 @@ import util.Preferences;
 /**
  * Created by marlon on 6/20/14.
  */
-public class Loop extends Thread {
+public class Simulator extends Thread {
     // ********** Fields **********//
     private double                     input;
     private double                     output;
@@ -28,7 +28,7 @@ public class Loop extends Thread {
     private Preferences.LoopType       loopType;
 
     // ********** Constructor **********//
-    public Loop(FirstOrderSystem process, PIController controller) {
+    public Simulator(FirstOrderSystem process, PIController controller) {
         setName("LoopSimulator");
         setDaemon(true);
         this.process           = process;

@@ -9,7 +9,7 @@ import util.Preferences;
 public class PISimulator extends Thread {
     // ********** Fields **********//
     private final double[]             vz;
-    private PIController controller;
+    private PIController               controller;
     private boolean                    started;
     private double                     samplingTime;
     private Preferences.SimulationMode simulationMode;

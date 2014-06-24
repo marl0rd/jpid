@@ -38,33 +38,34 @@ public class GuiController extends AnchorPane {
     private FirstOrderSystem   process;
     private PIController       controller;
     private PITuning           piTuning;
-    private Loop               loop;
+    private Simulator          simulator;
 
-    @FXML private ChoiceBox<Preferences.ControlType>    controlTypeChoiceBox;
-    @FXML private ChoiceBox<Preferences.Source>         sourceChoiceBox;
-    @FXML private ChoiceBox<Preferences.ControllerType> controllerChoiceBox;
-    @FXML private ChoiceBox<String>                     processChoiceBox;
-    @FXML private TextField                             sourceValueTextField;
-    @FXML private MenuItem                              startSimulationMenuItem;
-    @FXML private MenuItem                              stopSimulationMenuItem;
-    @FXML private MenuItem                              preferencesMenuItem;
-    @FXML private Label                                 inputValueLabel;
-    @FXML private Label                                 samplingTimeLabel;
-    @FXML private Label                                 kpLabel;
-    @FXML private Label                                 kiLabel;
-    @FXML private Label                                 integralTimeLabel;
-    @FXML private Label                                 tauLabel;
-    @FXML private Label                                 gainLabel;
-    @FXML private Label                                 outputValueLabel;
-    @FXML private CategoryAxis                          categoryAxis;
-    @FXML private NumberAxis                            numberAxis;
-    @FXML private LineChart<String, Double>             trendings;
-    @FXML private TextField                             dampingRatioTextField;
-    @FXML private TextField                             settlingTimeTextField;
-    private XYChart.Series<String, Double>              outputTrendingSeries;
+    @FXML private ChoiceBox<Preferences.ControlType> controlTypeChoiceBox;
+    @FXML private ChoiceBox<Preferences.Source>      sourceChoiceBox;
+    @FXML private ChoiceBox<Preferences.Controller>  controllerChoiceBox;
+    @FXML private ChoiceBox<String>                  processChoiceBox;
+    @FXML private TextField                          sourceValueTextField;
+    @FXML private MenuItem                           startSimulationMenuItem;
+    @FXML private MenuItem                           stopSimulationMenuItem;
+    @FXML private MenuItem                           preferencesMenuItem;
+    @FXML private Label                              inputValueLabel;
+    @FXML private Label                              samplingTimeLabel;
+    @FXML private Label                              kpLabel;
+    @FXML private Label                              kiLabel;
+    @FXML private Label                              integralTimeLabel;
+    @FXML private Label                              tauLabel;
+    @FXML private Label                              gainLabel;
+    @FXML private Label                              outputValueLabel;
+    @FXML private CategoryAxis                       categoryAxis;
+    @FXML private NumberAxis                         numberAxis;
+    @FXML private LineChart<String, Double>          trendings;
+    @FXML private TextField                          dampingRatioTextField;
+    @FXML private TextField                          settlingTimeTextField;
+    private XYChart.Series<String, Double>           outputTrendingSeries;
 
     // ********** Constructor **********//
     public GuiController() {
+        // Load the FXML
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("Gui.fxml"));
             fxmlLoader.setRoot(this);
@@ -74,10 +75,10 @@ public class GuiController extends AnchorPane {
             throw new RuntimeException(exception);
         }
 
-        process     = new FirstOrderSystem();
-        controller  = new PIController();
-        piTuning    = new PITuning(controller, process);
-        loop        = new Loop(process, controller);
+        simulator  = new Simulator(process, controller);
+        process    = new FirstOrderSystem();
+        controller = new PIController();
+        piTuning   = new PITuning(controller, process);
 
         initializeGraphics();
         registerListeners();
@@ -97,8 +98,13 @@ public class GuiController extends AnchorPane {
 
         // ChoiceBoxes
         controlTypeChoiceBox.getItems().addAll(Preferences.ControlType.values());
+        controlTypeChoiceBox.getSelectionModel().select(Preferences.controlType);
         sourceChoiceBox.getItems().addAll(Preferences.Source.values());
-
+        sourceChoiceBox.getSelectionModel().select(Preferences.source);
+        controllerChoiceBox.getItems().addAll(Preferences.Controller.values());
+        controllerChoiceBox.getSelectionModel().select(Preferences.controller);
+        processChoiceBox.getItems().addAll("ConicalTank");
+        processChoiceBox.getSelectionModel().select(0);
     }
 
     private void registerListeners() {
@@ -108,7 +114,7 @@ public class GuiController extends AnchorPane {
         preferencesMenuItem.setOnAction(value -> showPreferences());
 
         // The loop inform about new values, so they are displayed in the gui:
-        loop.timeStampProperty().addListener(updateGui);
+        simulator.timeStampProperty().addListener(updateGui);
     }
 
     private void showPreferences() {
@@ -122,70 +128,55 @@ public class GuiController extends AnchorPane {
         Preferences.simulationMode = preferencesController.getSelectedSimulationMode();
         Preferences.loopType       = preferencesController.getSelectedLoopType();
 
-        loop.setSamplingTime(Preferences.samplingTime);
-        loop.setSimulationMode(Preferences.simulationMode);
-        loop.setLoopType(Preferences.loopType);
+        simulator.setSamplingTime(Preferences.samplingTime);
+        simulator.setSimulationMode(Preferences.simulationMode);
+        simulator.setLoopType(Preferences.loopType);
     }
 
     private void startSimulation(){
-        loop.start();
+        simulator.start();
     }
 
     private void stopSimulation(){
-        loop.interrupt();
-        loop = new Loop(process, controller);
+        simulator.interrupt();
+        simulator = new Simulator(process, controller);
     }
 
     private void updateGui(){
-        if(loop.getLoopStarted()){
+        if(simulator.getLoopStarted()){
             // Update Loop visualization
-            outputTrendingSeries.getData().add(new XYChart.Data<>(TIME_FORMAT.format(Date.from(Instant.now())), loop.getOutput()));
+            outputTrendingSeries.getData().add(new XYChart.Data<>(TIME_FORMAT.format(Date.from(Instant.now())), simulator.getOutput()));
             while (outputTrendingSeries.getData().size() > TRENDING_DATA_LIMIT) {
                 outputTrendingSeries.getData().remove(0);
             }
-            consoleListView.getItems().add("I= " + loop.getInput() + ", \t O=" + loop.getOutput());
-            while(consoleListView.getItems().size() > CONSOLE_DATA_LIMIT) {
-                consoleListView.getItems().remove(0);
-            }
         }
 
-        samplingTimeLabel.setText(Double.toString(loop.getSamplingTime()));
-
-        // Update conicalTank visualization
-        heightOperationPointLabel.setText(String.valueOf(conicalTank.getHeightOperationPoint()));
-        inflowOperationPointLabel.setText(String.valueOf(conicalTank.getInflowOperationPoint()));
+        samplingTimeLabel.setText(Double.toString(simulator.getSamplingTime()));
 
         // Update Process visualization
-        tauLabel.setText(Double.toString(loop.getProcess().getTau()));
-        gainLabel.setText(Double.toString(loop.getProcess().getGain()));
-        inputLabel.setText(Double.toString(loop.getProcess().getInput()));
-        outputLabel.setText(Double.toString(loop.getProcess().getOutput()));
+        tauLabel.setText(Double.toString(simulator.getProcess().getTau()));
+        gainLabel.setText(Double.toString(simulator.getProcess().getGain()));
+        inputValueLabel.setText(Double.toString(simulator.getProcess().getInput()));
+        outputValueLabel.setText(Double.toString(simulator.getProcess().getOutput()));
 
         // Update Controller visualization
-        kpLabel.setText(Double.toString(loop.getController().getProportionalGain()));
-        kiLabel.setText(Double.toString(loop.getController().getIntegralGain()));
-        integralTimeLabel.setText(Double.toString(loop.getController().getIntegralTime()));
+        kpLabel.setText(Double.toString(simulator.getController().getProportionalGain()));
+        kiLabel.setText(Double.toString(simulator.getController().getIntegralGain()));
+        integralTimeLabel.setText(Double.toString(simulator.getController().getIntegralTime()));
     }
 
     private InvalidationListener updateGui = new InvalidationListener() {
         @Override
         public void invalidated(Observable observable) {
             updateGui();
-            loop.timeStampProperty().removeListener(this);
-            loop.timeStampProperty().addListener(this);
+            simulator.timeStampProperty().removeListener(this);
+            simulator.timeStampProperty().addListener(this);
         }
     };
 
     private void recalculate() {
-        linealizeInNewSetPoint();
         tuneController();
-        loop.setInput(Double.parseDouble(heightSetPointTextField.getText()));
         updateGui();
-    }
-
-    private void linealizeInNewSetPoint(){
-        conicalTank.setInflowOperationPoint(Double.parseDouble(flowSetPointTextField.getText()));
-        conicalTank.setHeightOperationPoint(Double.parseDouble(heightSetPointTextField.getText()));
     }
 
     private void tuneController() {
