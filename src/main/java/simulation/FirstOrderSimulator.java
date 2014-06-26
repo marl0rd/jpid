@@ -14,8 +14,9 @@ import util.Preferences;
  */
 public class FirstOrderSimulator extends Thread{
     // ********** Fields **********//
-    private final double[]             vz;
-    private FirstOrderSystem process;
+    private final double[]             iz;
+    private final double[]             oz;
+    private FirstOrderSystem           process;
     private boolean                    started;
     private double                     samplingTime;
     private Preferences.SimulationSpeed simulationSpeed;
@@ -27,20 +28,29 @@ public class FirstOrderSimulator extends Thread{
         this.process        = process;
         this.samplingTime   = Preferences.samplingTime;
         this.simulationSpeed = Preferences.simulationSpeed;
-        this.vz             = new double[2];
+        this.iz             = new double[2];
+        this.oz             = new double[2];
     }
 
     // ********** Methods **********//
     @Override
     public void run() {
         started = true;
+        double k1;
+        double k2;
         while(started){
-            vz[0] = process.getInput() - ((samplingTime- 2.0 * process.getTau()) / (samplingTime + 2.0 * process.getTau())) * vz[1];
-            System.out.println("vcz[0]" + vz[0]);
-            process.setOutput(((process.getGain() * samplingTime) / (samplingTime + 2.0 * process.getTau())) * (vz[0] + vz[1]));
+            k1 = (process.getGain() * samplingTime) / (samplingTime + (2*process.getTau()));
+            k2 = (samplingTime - (2*process.getTau())) / (samplingTime + (2*process.getTau()));
+
+            iz[0] = process.getInput();
+            oz[0] = (k1 * iz[1]) + (k1 * iz[0]) - (k2*oz[1]);
+
+            process.setOutput(oz[0]);
+
             delay();
-            vz[1] = vz[0];
-            System.out.println("vcz[1]" + vz[1]);
+
+            iz[1] = iz[0];
+            oz[1] = oz[0];
         }
     }
 

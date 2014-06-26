@@ -40,6 +40,7 @@ public class PIControllerSimulator extends Thread {
         while(started){
             k1 = (2 * controller.getProportionalGain() + samplingTime * controller.getIntegralGain()) / 2;
             k2 = (samplingTime * controller.getIntegralGain() - 2 * controller.getProportionalGain()) / 2;
+
             iz[0] = getController().getInput();
             oz[0] = (k1 * iz[0]) + (k2 * iz[1]) - oz[1];
             controller.setOutput(oz[0]);
