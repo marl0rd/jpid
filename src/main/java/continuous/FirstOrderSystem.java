@@ -5,9 +5,9 @@ package continuous;
  *
  * The transfer function is in form:
  *
- *      output         gain
- *      ------   =   ---------
- *       input       tau*S + 1
+ *             gain * input
+ *  output =  -------------
+ *              tau*S + 1
  *
  */
 public class FirstOrderSystem {

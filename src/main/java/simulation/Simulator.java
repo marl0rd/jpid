@@ -4,98 +4,121 @@ import continuous.FirstOrderSystem;
 import continuous.PIController;
 import javafx.application.Platform;
 import javafx.beans.property.*;
+import source.Constant;
+import source.Source;
 import util.Preferences;
-
 
 /**
  * Created by marlon on 6/20/14.
+ *
+ * Dummy simulator:
+ *     Only simulates First-Order Systems with PIController.
+ *     __________                ______________         ___________________
+ *    |          |  +    error  |              |       |                   |
+ *    |  Source  |---( ) ------>| PIController |------>| FirstOrderProcess |----------> Output
+ *    |__________|    |-        |______________|       |___________________|     |
+ *                    |                                                          |
+ *                    ------------------------------------------------------------
+ *
  */
+
 public class Simulator extends Thread {
     // ********** Fields **********//
-    private double                     input;
-    private double                     output;
-    private double                     error;
-    private FirstOrderSystem process;
-    private PIController controller;
-    private FirstOrderSimulator        processThread;
-    private PISimulator                controllerThread;
-    private LongProperty               timeStamp;
-    private double                     samplingTime;
-    private Preferences.SimulationMode simulationMode;
-    private BooleanProperty            processStarted;
-    private BooleanProperty            controllerStarted;
-    private BooleanProperty            loopStarted;
-    private Preferences.LoopType       loopType;
+    private Source                      source;
+    private PIControllerSimulator       controllerThread;
+    private FirstOrderSimulator         processThread;
+    private double                      output;
+    private double                      error;
+
+    private Preferences.SimulationSpeed simulationSpeed;
+    private Preferences.LoopType        loopType;
+    private LongProperty                timeStamp;
+    private double                      samplingTime;
 
     // ********** Constructor **********//
-    public Simulator(FirstOrderSystem process, PIController controller) {
+    public Simulator() {
+        this(new Constant(1.0), new PIController(), new FirstOrderSystem());
+    }
+
+    public Simulator(Source source, PIController controller, FirstOrderSystem process) {
         setName("LoopSimulator");
         setDaemon(true);
-        this.process           = process;
-        this.controller        = controller;
-        this.processThread     = new FirstOrderSimulator(this.process);
-        this.controllerThread  = new PISimulator(this.controller);
-        this.input             = 0.0;
+        this.source            = source;
+        this.controllerThread  = new PIControllerSimulator(controller);
+        this.processThread     = new FirstOrderSimulator(process);
         this.output            = 0.0;
         this.error             = 0.0;
-        this.processStarted    = new SimpleBooleanProperty(this, "processStarted", false);
-        this.controllerStarted = new SimpleBooleanProperty(this, "controllerStarted", false);
-        this.loopStarted       = new SimpleBooleanProperty(this, "loopStarted", false);
+
+        this.simulationSpeed   = Preferences.simulationSpeed;
         this.loopType          = Preferences.LoopType.CLOSE_LOOP;
-        this.simulationMode    = Preferences.simulationMode;
         this.timeStamp         = new SimpleLongProperty(this, "timestamp", System.currentTimeMillis());
-        this.samplingTime      = Math.min(processThread.getSamplingTime(), controllerThread.getSamplingTime());
+        this.samplingTime      = Math.min(processThread.getSamplingTime(), Math.min(controllerThread.getSamplingTime(), source.getSamplingTime()));
     }
 
     // ********** Methods **********//
     @Override
     public void run() {
-        processThread.start();
-        processStarted.set(true);
-
+        new Thread(source).start();
         controllerThread.start();
-        controllerStarted.set(true);
-
-        loopStarted.set(true);
-        while(loopStarted.get()){
-            System.out.print("I=" + this.input + "\t");
-
-            error = input - getProcessThread().getProcess().getOutput();
+        processThread.start();
+        boolean loopStarted = true;
+        while(loopStarted){
+            //******************************** LOOP ****************************************//
             if(loopType == Preferences.LoopType.CLOSE_LOOP){
+                // Get the error
+                error = source.getOutput() - processThread.getProcess().getOutput();
+                // Set the error as controller's input
                 controllerThread.getController().setInput(this.error);
+                // Set the controller output to the process
                 processThread.getProcess().setInput(controllerThread.getController().getOutput());
+                // Get the process output
+                output = processThread.getProcess().getOutput();
             } else {
-                processThread.getProcess().setInput(this.input);
+                // Set source directly in the process
+                processThread.getProcess().setInput(source.getOutput());
+                // Get the process output
+                output = processThread.getProcess().getOutput();
             }
 
-            System.out.print("C=" + processThread.getProcess().getOutput() + "\t");
-            output = processThread.getProcess().getOutput();
-            System.out.print("0=" + this.output + "\n");
-            delay();
+
+            //******************************** DELAY ****************************************//
+            // The samplingTime of simulation is based in second, the sleep method is based in milliseconds
+            try {
+                Thread.sleep((long) ((samplingTime * simulationSpeed.factor)* 1000));
+            } catch (InterruptedException e) {
+                loopStarted = false;
+                processThread.setStarted(false);
+                controllerThread.setStarted(false);
+            }
+            Platform.runLater(() -> setTimeStamp(System.currentTimeMillis()));
+
+            //******************************** PRINTS ****************************************//
+            System.out.println("Input:" + source.getOutput() + "\t" +
+                               "Error:" + error + "\t" +
+                               "Output:" + processThread.getProcess().getOutput());
         }
     }
 
-    public void delay(){
-        // The samplingTime of simulation is based in second, the sleep method is based in milliseconds
-        try {
-            Thread.sleep((long) ((samplingTime * simulationMode.factor)* 1000));
-        } catch (InterruptedException e) {
-            loopStarted.set(false);
-            processThread.setStarted(false);
-            controllerThread.setStarted(false);
-        }
-        Platform.runLater(() -> {
-            setTimeStamp(System.currentTimeMillis());
-        });
+    // ********** Setters and Getters **********//
+    public Source getSource() {
+        return source;
+    }
+    public void setSource(Source source) {
+        this.source = source;
     }
 
-                // ********** Setters and Getters **********//
-
-    public double getInput() {
-        return input;
+    public PIController getController() {
+        return controllerThread.getController();
     }
-    public void setInput(double input) {
-        this.input = input;
+    public void setController(PIController controller) {
+        this.controllerThread.setController(controller);
+    }
+
+    public FirstOrderSystem getProcess() {
+        return processThread.getProcess();
+    }
+    public void setProcess(FirstOrderSystem process) {
+        this.processThread.setProcess(process);
     }
 
     public double getOutput() {
@@ -112,34 +135,6 @@ public class Simulator extends Thread {
         this.error = error;
     }
 
-    public FirstOrderSystem getProcess() {
-        return process;
-    }
-    public void setProcess(FirstOrderSystem process) {
-        this.process = process;
-    }
-
-    public PIController getController() {
-        return controller;
-    }
-    public void setController(PIController controller) {
-        this.controller = controller;
-    }
-
-    public FirstOrderSimulator getProcessThread() {
-        return processThread;
-    }
-    public void setProcessThread(FirstOrderSimulator processThread) {
-        this.processThread = processThread;
-    }
-
-    public PISimulator getControllerThread() {
-        return controllerThread;
-    }
-    public void setControllerThread(PISimulator controllerThread) {
-        this.controllerThread = controllerThread;
-    }
-
     public double getSamplingTime() {
         return samplingTime;
     }
@@ -149,43 +144,13 @@ public class Simulator extends Thread {
         this.controllerThread.setSamplingTime(samplingTime);
     }
 
-    public Preferences.SimulationMode getSimulationMode() {
-        return simulationMode;
+    public Preferences.SimulationSpeed getSimulationSpeed() {
+        return simulationSpeed;
     }
-    public void setSimulationMode(Preferences.SimulationMode simulationMode) {
-        this.simulationMode = simulationMode;
-        this.processThread.setSimulationMode(simulationMode);
-        this.controllerThread.setSimulationMode(simulationMode);
-    }
-
-    public boolean getProcessStarted() {
-        return processStarted.get();
-    }
-    public BooleanProperty processStartedProperty() {
-        return processStarted;
-    }
-    public void setProcessStarted(boolean processStarted) {
-        this.processStarted.set(processStarted);
-    }
-
-    public boolean getControllerStarted() {
-        return controllerStarted.get();
-    }
-    public BooleanProperty controllerStartedProperty() {
-        return controllerStarted;
-    }
-    public void setControllerStarted(boolean controllerStarted) {
-        this.controllerStarted.set(controllerStarted);
-    }
-
-    public boolean getLoopStarted() {
-        return loopStarted.get();
-    }
-    public BooleanProperty loopStartedProperty() {
-        return loopStarted;
-    }
-    public void setLoopStarted(boolean loopStarted) {
-        this.loopStarted.set(loopStarted);
+    public void setSimulationSpeed(Preferences.SimulationSpeed simulationSpeed) {
+        this.simulationSpeed = simulationSpeed;
+        this.processThread.setSimulationSpeed(simulationSpeed);
+        this.controllerThread.setSimulationSpeed(simulationSpeed);
     }
 
     public Preferences.LoopType getLoopType() {
@@ -204,4 +169,5 @@ public class Simulator extends Thread {
     public void setTimeStamp(long timeStamp) {
         this.timeStamp.set(timeStamp);
     }
+
 }

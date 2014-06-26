@@ -5,12 +5,13 @@ import util.Preferences;
 /**
  * One constant value function
  */
-public class Constant extends Source implements Runnable{
+public class Constant extends Source {
     private double value;
 
-    public Constant() {
+    public Constant(double value) {
         samplingTime   = Preferences.samplingTime;
-        simulationMode = Preferences.simulationMode;
+        simulationSpeed = Preferences.simulationSpeed;
+        this.value     = value;
     }
 
     @Override
@@ -25,7 +26,7 @@ public class Constant extends Source implements Runnable{
     public void delay(){
         // The samplingTime of simulation is based in second, the sleep method is based in milliseconds
         try {
-            Thread.sleep((long) ((samplingTime * simulationMode.factor)* 1000));
+            Thread.sleep((long) ((samplingTime * simulationSpeed.factor)* 1000));
         } catch (InterruptedException e) {
             started = false;
         }

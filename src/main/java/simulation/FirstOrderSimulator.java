@@ -5,10 +5,11 @@ import util.Preferences;
 
 /**
  * Created by marlon on 6/17/14.
- *
+ *                          ____________
  *                         |   gain     |
  * simulation.input ------>| ---------  |-------> simulation.output
  *                         | tau*s + 1  |
+ *                          ------------
  *
  */
 public class FirstOrderSimulator extends Thread{
@@ -17,7 +18,7 @@ public class FirstOrderSimulator extends Thread{
     private FirstOrderSystem process;
     private boolean                    started;
     private double                     samplingTime;
-    private Preferences.SimulationMode simulationMode;
+    private Preferences.SimulationSpeed simulationSpeed;
 
     // ********** Constructor **********//
     public FirstOrderSimulator(FirstOrderSystem process) {
@@ -25,7 +26,7 @@ public class FirstOrderSimulator extends Thread{
         setDaemon(true);
         this.process        = process;
         this.samplingTime   = Preferences.samplingTime;
-        this.simulationMode = Preferences.simulationMode;
+        this.simulationSpeed = Preferences.simulationSpeed;
         this.vz             = new double[2];
     }
 
@@ -46,7 +47,7 @@ public class FirstOrderSimulator extends Thread{
     public void delay(){
         // The samplingTime of simulation is based in second, the sleep method is based in milliseconds
         try {
-            Thread.sleep((long) ((samplingTime * simulationMode.factor)* 1000));
+            Thread.sleep((long) ((samplingTime * simulationSpeed.factor)* 1000));
         } catch (InterruptedException e) {
             started = false;
         }
@@ -74,10 +75,10 @@ public class FirstOrderSimulator extends Thread{
         this.started = started;
     }
 
-    public Preferences.SimulationMode getSimulationMode() {
-        return simulationMode;
+    public Preferences.SimulationSpeed getSimulationSpeed() {
+        return simulationSpeed;
     }
-    public void setSimulationMode(Preferences.SimulationMode simulationMode) {
-        this.simulationMode = simulationMode;
+    public void setSimulationSpeed(Preferences.SimulationSpeed simulationSpeed) {
+        this.simulationSpeed = simulationSpeed;
     }
 }

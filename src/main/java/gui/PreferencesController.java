@@ -10,17 +10,16 @@ import util.Preferences;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
-import static util.Preferences.SimulationMode;
+import static util.Preferences.SimulationSpeed;
 import static util.Preferences.LoopType;
-import static util.Preferences.loopType;
 
 /**
  * Created by marlon on 6/20/14.
  */
 public class PreferencesController extends GridPane implements Initializable{
-    @FXML private ChoiceBox<SimulationMode> simulationModeCheckBox;
-    @FXML private ChoiceBox<LoopType>       loopTypeChoiceBox;
-    @FXML private TextField                 samplingTimeTextField;
+    @FXML private ChoiceBox<SimulationSpeed> simulationModeCheckBox;
+    @FXML private ChoiceBox<LoopType>        loopTypeChoiceBox;
+    @FXML private TextField                  samplingTimeTextField;
 
     public PreferencesController() {
         try {
@@ -35,14 +34,14 @@ public class PreferencesController extends GridPane implements Initializable{
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        simulationModeCheckBox.getItems().addAll(SimulationMode.values());
+        simulationModeCheckBox.getItems().addAll(SimulationSpeed.values());
         loopTypeChoiceBox.getItems().addAll(LoopType.values());
-        simulationModeCheckBox.getSelectionModel().select(Preferences.simulationMode);
+        simulationModeCheckBox.getSelectionModel().select(Preferences.simulationSpeed);
         loopTypeChoiceBox.getSelectionModel().select(Preferences.loopType);
         samplingTimeTextField.setText(Double.toString(Preferences.samplingTime));
     }
 
-    public SimulationMode getSelectedSimulationMode() {
+    public SimulationSpeed getSelectedSimulationMode() {
         return simulationModeCheckBox.getSelectionModel().getSelectedItem();
     }
 
