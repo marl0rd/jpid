@@ -38,8 +38,8 @@ public class PIControllerSimulator extends Thread {
         double k1;
         double k2;
         while(started){
-            k1 = (2 * controller.getProportionalGain() + samplingTime * controller.getIntegralGain()) / 2;
-            k2 = (samplingTime * controller.getIntegralGain() - 2 * controller.getProportionalGain()) / 2;
+            k1 = (2.0 * controller.getProportionalGain() + samplingTime * controller.getIntegralGain()) / 2.0;
+            k2 = (samplingTime * controller.getIntegralGain() - 2.0 * controller.getProportionalGain()) / 2.0;
 
             iz[0] = getController().getInput();
             oz[0] = (k1 * iz[0]) + (k2 * iz[1]) - oz[1];
@@ -49,6 +49,19 @@ public class PIControllerSimulator extends Thread {
 
             iz[1] = iz[0];
             oz[1] = oz[0];
+
+            //******************************** PRINTS ****************************************//
+            System.out.println("(Controller)" + "\t" +
+                    "Input:"  + getController().getInput()            + "\t" +
+                    "k1:"     + k1                                    + "\t" +
+                    "k2:"     + k2                                    + "\t" +
+                    "iz[0]:"  + iz[0]                                 + "\t" +
+                    "oz[0]:"  + oz[0]                                 + "\t" +
+                    "iz[1]:"  + iz[1]                                 + "\t" +
+                    "oz[1]:"  + oz[1]                                 + "\t" +
+                    "kp:"     + getController().getProportionalGain() + "\t" +
+                    "ki:"     + getController().getIntegralGain()     + "\t" +
+                    "Output:" + getController().getOutput()           + "\t" );
         }
     }
 

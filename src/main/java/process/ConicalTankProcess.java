@@ -17,7 +17,6 @@ public class ConicalTankProcess extends FirstOrderSystem{
     private static final double OBSTRUCTION           = 1.5;
     private DoubleProperty      heightOperationPoint;
     private DoubleProperty      inflowOperationPoint;
-    private FirstOrderSystem    transferFunction;
 
 
     // ********** Constructor **********//
@@ -47,7 +46,6 @@ public class ConicalTankProcess extends FirstOrderSystem{
                 return "inflowOperationPoint";
             }
         };
-        transferFunction = new FirstOrderSystem();
     }
 
 
@@ -60,8 +58,8 @@ public class ConicalTankProcess extends FirstOrderSystem{
 
         double beta = Math.pow(getHeightOperationPoint(), -2) / k;
 
-        transferFunction.setGain(beta / alpha);
-        transferFunction.setTau(1 / alpha);
+        setGain(beta / alpha);
+        setTau(1 / alpha);
     }
 
     // ********** Setters and Getters **********//
@@ -83,12 +81,5 @@ public class ConicalTankProcess extends FirstOrderSystem{
     }
     public void setInflowOperationPoint(double inflowOperationPoint) {
         this.inflowOperationPoint.set(inflowOperationPoint);
-    }
-
-    public FirstOrderSystem getTransferFunction() {
-        return transferFunction;
-    }
-    public void setTransferFunction(FirstOrderSystem transferFunction) {
-        this.transferFunction = transferFunction;
     }
 }

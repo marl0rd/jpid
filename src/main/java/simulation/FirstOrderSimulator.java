@@ -3,6 +3,8 @@ package simulation;
 import continuous.FirstOrderSystem;
 import util.Preferences;
 
+import java.io.Console;
+
 /**
  * Created by marlon on 6/17/14.
  *                          ____________

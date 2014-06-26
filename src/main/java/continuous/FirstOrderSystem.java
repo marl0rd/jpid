@@ -53,4 +53,9 @@ public class FirstOrderSystem {
     public void setTau(double tau) {
         this.tau = tau;
     }
+
+    @Override
+    public String toString() {
+        return "tau:" +tau + "\tgain:" + gain;
+    }
 }

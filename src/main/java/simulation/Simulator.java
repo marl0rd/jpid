@@ -59,6 +59,7 @@ public class Simulator extends Thread {
     @Override
     public void run() {
         new Thread(source).start();
+        controllerThread.setSamplingTime(Preferences.samplingTime / 10.0);
         controllerThread.start();
         processThread.start();
         boolean loopStarted = true;
@@ -92,10 +93,14 @@ public class Simulator extends Thread {
             }
             Platform.runLater(() -> setTimeStamp(System.currentTimeMillis()));
 
-            //******************************** PRINTS ****************************************//
-            System.out.println("Input:" + source.getOutput() + "\t" +
-                               "Error:" + error + "\t" +
-                               "Output:" + processThread.getProcess().getOutput());
+//            //******************************** PRINTS ****************************************//
+//            System.out.println("(Simulator)" + "\t" +
+//                               "Input:"             + source.getOutput()                           + "\t" +
+//                               "Error:"             + error                                        + "\t" +
+//                               "Controller-Output:" + controllerThread.getController().getOutput() + "\t" +
+//                               "Process-Input:"     + processThread.getProcess().getInput()        + "\t" +
+//                               "Process-Output:"    + processThread.getProcess().getOutput()       + "\t" +
+//                               "Output:"            + processThread.getProcess().getOutput());
         }
     }
 
