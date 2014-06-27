@@ -22,6 +22,9 @@ Simulation and test of Transfer function. At this time only has:
 Contributors
 ============
 Phd. Jose Eduardo Rengel
+Ing. Rafael Solorzano
+Ing. Gilberto Requena
+Ing. Lucio Guerchi
 
 License
 =======
