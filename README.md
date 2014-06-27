@@ -18,6 +18,11 @@ Simulation and test of Transfer function. At this time only has:
         - First Order Transfer function Simulation.
         - PI Simulation.
         
+        
+Contributors
+============
+Phd. Jose Eduardo Rengel
+
 License
 =======
 jpid uses the new BSD license.
